@@ -10,86 +10,156 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f5f6f8}
 </style>
 </head>
 <body>
-<iframe id="appframe" src="app.html?v=1169" title="PlatiniunNet"></iframe>
+<iframe id="appframe" src="app.html?v=1170" title="PlatiniunNet"></iframe>
 <script>
 (function(){
   const frame=document.getElementById('appframe');
+
+  function organizarMenu(d){
+    const nav=d.getElementById('nav');
+    if(!nav || nav.dataset.organized==='1') return;
+    nav.dataset.organized='1';
+    nav.classList.add('nav-groups');
+
+    const groups=[
+      ['Gestão Principal',['dashboard','clientes','cadastroCliente','planos','cobrancas','recebimentos']],
+      ['Atendimentos e Contratos',['ordens','contratos','cliente']],
+      ['Rede e Equipamentos',['pontos','equipamentos','tecnicos','despesas']],
+      ['Configurações e Controle',['perfisPermissoes','usuarios','acessosPonto','registros','configObrigatorios']]
+    ];
+
+    const byPage={};
+    nav.querySelectorAll('button[data-page]').forEach(b=>byPage[b.dataset.page]=b);
+    nav.innerHTML='';
+
+    groups.forEach(([title,pages])=>{
+      const group=d.createElement('div');
+      group.className='nav-group';
+      const heading=d.createElement('div');
+      heading.className='nav-group-title';
+      heading.textContent=title;
+      const buttons=d.createElement('div');
+      buttons.className='nav-group-buttons';
+      pages.forEach(page=>{if(byPage[page])buttons.appendChild(byPage[page]);});
+      group.appendChild(heading);
+      group.appendChild(buttons);
+      nav.appendChild(group);
+    });
+
+    Object.keys(byPage).forEach(page=>{
+      const b=byPage[page];
+      if(!b.isConnected){
+        const extra=nav.querySelector('.nav-group:last-child .nav-group-buttons');
+        if(extra) extra.appendChild(b);
+      }
+    });
+
+    const style=d.createElement('style');
+    style.textContent=`
+    #nav.nav-groups{display:grid!important;grid-template-columns:1fr!important;gap:12px!important;position:static!important;padding:14px 16px!important;background:#f5f6f8!important;border-bottom:1px solid #ececf0!important}
+    #nav .nav-group{background:#fff;border:1px solid #e6e6eb;border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.035)}
+    #nav .nav-group-title{margin:0 0 10px 2px;color:#8f0a57;font-size:13px;font-weight:800;letter-spacing:.01em}
+    #nav .nav-group-buttons{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
+    #nav .nav-group-buttons button{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:76px;padding:9px 7px!important;border:1px solid #e2e2e7!important;border-radius:10px!important;background:#fff!important;color:#33343a!important;font-size:12px!important;font-weight:700;line-height:1.15;text-align:center;cursor:pointer;transition:.15s ease}
+    #nav .nav-group-buttons button:hover{border-color:#cfa8bf!important;background:#fcf8fa!important;transform:translateY(-1px)}
+    #nav .nav-group-buttons button.active{background:#8f0a57!important;border-color:#8f0a57!important;color:#fff!important;box-shadow:0 4px 12px rgba(143,10,87,.16)}
+    #nav .nav-group-buttons button::before{display:block;font-size:20px;line-height:1;font-weight:800;color:#8f0a57}
+    #nav .nav-group-buttons button.active::before{color:#fff}
+    #nav button[data-page="dashboard"]::before{content:'▦'}
+    #nav button[data-page="clientes"]::before{content:'👥'}
+    #nav button[data-page="cadastroCliente"]::before{content:'＋'}
+    #nav button[data-page="planos"]::before{content:'⌁'}
+    #nav button[data-page="cobrancas"]::before{content:'▤'}
+    #nav button[data-page="recebimentos"]::before{content:'$'}
+    #nav button[data-page="ordens"]::before{content:'☑'}
+    #nav button[data-page="contratos"]::before{content:'▧'}
+    #nav button[data-page="cliente"]::before{content:'◎'}
+    #nav button[data-page="pontos"]::before{content:'⌘'}
+    #nav button[data-page="equipamentos"]::before{content:'▣'}
+    #nav button[data-page="tecnicos"]::before{content:'⚒'}
+    #nav button[data-page="despesas"]::before{content:'◫'}
+    #nav button[data-page="perfisPermissoes"]::before{content:'◈'}
+    #nav button[data-page="usuarios"]::before{content:'●'}
+    #nav button[data-page="acessosPonto"]::before{content:'◷'}
+    #nav button[data-page="registros"]::before{content:'☷'}
+    #nav button[data-page="configObrigatorios"]::before{content:'✓'}
+    @media(max-width:1050px){#nav .nav-group-buttons{grid-template-columns:repeat(4,minmax(0,1fr))}}
+    @media(max-width:700px){#nav.nav-groups{padding:10px!important;gap:10px!important}#nav .nav-group{padding:10px;border-radius:12px}#nav .nav-group-title{font-size:12px;margin-bottom:8px}#nav .nav-group-buttons{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}#nav .nav-group-buttons button{min-height:68px;padding:7px 5px!important;font-size:11px!important}#nav .nav-group-buttons button::before{font-size:18px}}
+    @media(max-width:430px){#nav .nav-group-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}#nav .nav-group-buttons button{min-height:62px}}
+    `;
+    d.head.appendChild(style);
+  }
+
+  function instalarDataNascimentoFacil(d){
+    const original=d.getElementById('dataNascimento');
+    if(!original || original.dataset.easyBirth==='1') return;
+    original.dataset.easyBirth='1';
+
+    const campo=d.createElement('input');
+    campo.id='dataNascimentoTexto';
+    campo.type='text';
+    campo.inputMode='numeric';
+    campo.autocomplete='off';
+    campo.maxLength=10;
+    campo.placeholder='DD/MM/AAAA';
+    campo.setAttribute('aria-label','Data de nascimento no formato dia mês ano');
+
+    const aviso=d.createElement('div');
+    aviso.id='dataNascimentoAviso';
+    aviso.style.cssText='min-height:15px;margin-top:4px;font-size:11px;font-weight:700;color:#b42318';
+
+    function brDeIso(v){
+      const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      return m?`${m[3]}/${m[2]}/${m[1]}`:'';
+    }
+    function mascarar(v){
+      const n=String(v||'').replace(/\D/g,'').slice(0,8);
+      if(n.length<=2)return n;
+      if(n.length<=4)return n.slice(0,2)+'/'+n.slice(2);
+      return n.slice(0,2)+'/'+n.slice(2,4)+'/'+n.slice(4);
+    }
+    function converter(v){
+      const m=String(v||'').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if(!m)return {ok:false,msg:'Informe a data completa: DD/MM/AAAA.'};
+      const dia=Number(m[1]),mes=Number(m[2]),ano=Number(m[3]);
+      if(ano<1900)return {ok:false,msg:'Confira o ano informado.'};
+      const dt=new Date(ano,mes-1,dia);
+      if(dt.getFullYear()!==ano||dt.getMonth()!==mes-1||dt.getDate()!==dia)return {ok:false,msg:'Essa data não existe.'};
+      const hoje=new Date(); hoje.setHours(23,59,59,999);
+      if(dt>hoje)return {ok:false,msg:'A data de nascimento não pode ser futura.'};
+      return {ok:true,iso:`${ano}-${String(mes).padStart(2,'0')}-${String(dia).padStart(2,'0')}`};
+    }
+    function sincronizar(mostrarErro){
+      if(!campo.value){original.value='';aviso.textContent='';return;}
+      const r=converter(campo.value);
+      if(r.ok){
+        original.value=r.iso;
+        aviso.textContent='';
+        campo.style.borderColor='#198754';
+        original.dispatchEvent(new Event('input',{bubbles:true}));
+        original.dispatchEvent(new Event('change',{bubbles:true}));
+      }else{
+        original.value='';
+        campo.style.borderColor=mostrarErro?'#d92d20':'';
+        aviso.textContent=mostrarErro?r.msg:'';
+      }
+    }
+
+    campo.value=brDeIso(original.value);
+    campo.addEventListener('input',()=>{campo.value=mascarar(campo.value);campo.style.borderColor='';aviso.textContent='';sincronizar(false);});
+    campo.addEventListener('blur',()=>sincronizar(true));
+
+    original.style.display='none';
+    original.parentNode.insertBefore(campo,original);
+    original.parentNode.appendChild(aviso);
+  }
+
   frame.addEventListener('load',()=>{
     try{
       const d=frame.contentDocument;
-      const nav=d.getElementById('nav');
-      if(!nav || nav.dataset.organized==='1') return;
-      nav.dataset.organized='1';
-      nav.classList.add('nav-groups');
-
-      const groups=[
-        ['Gestão Principal',['dashboard','clientes','cadastroCliente','planos','cobrancas','recebimentos']],
-        ['Atendimentos e Contratos',['ordens','contratos','cliente']],
-        ['Rede e Equipamentos',['pontos','equipamentos','tecnicos','despesas']],
-        ['Configurações e Controle',['perfisPermissoes','usuarios','acessosPonto','registros','configObrigatorios']]
-      ];
-
-      const byPage={};
-      nav.querySelectorAll('button[data-page]').forEach(b=>byPage[b.dataset.page]=b);
-      nav.innerHTML='';
-
-      groups.forEach(([title,pages])=>{
-        const group=d.createElement('div');
-        group.className='nav-group';
-        const heading=d.createElement('div');
-        heading.className='nav-group-title';
-        heading.textContent=title;
-        const buttons=d.createElement('div');
-        buttons.className='nav-group-buttons';
-        pages.forEach(page=>{ if(byPage[page]) buttons.appendChild(byPage[page]); });
-        group.appendChild(heading);
-        group.appendChild(buttons);
-        nav.appendChild(group);
-      });
-
-      Object.keys(byPage).forEach(page=>{
-        const b=byPage[page];
-        if(!b.isConnected){
-          let extra=nav.querySelector('.nav-group:last-child .nav-group-buttons');
-          if(extra) extra.appendChild(b);
-        }
-      });
-
-      const style=d.createElement('style');
-      style.textContent=`
-      #nav.nav-groups{display:grid!important;grid-template-columns:1fr!important;gap:12px!important;position:static!important;padding:14px 16px!important;background:#f5f6f8!important;border-bottom:1px solid #ececf0!important}
-      #nav .nav-group{background:#fff;border:1px solid #e6e6eb;border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.035)}
-      #nav .nav-group-title{margin:0 0 10px 2px;color:#8f0a57;font-size:13px;font-weight:800;letter-spacing:.01em}
-      #nav .nav-group-buttons{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
-      #nav .nav-group-buttons button{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:76px;padding:9px 7px!important;border:1px solid #e2e2e7!important;border-radius:10px!important;background:#fff!important;color:#33343a!important;font-size:12px!important;font-weight:700;line-height:1.15;text-align:center;cursor:pointer;transition:.15s ease}
-      #nav .nav-group-buttons button:hover{border-color:#cfa8bf!important;background:#fcf8fa!important;transform:translateY(-1px)}
-      #nav .nav-group-buttons button.active{background:#8f0a57!important;border-color:#8f0a57!important;color:#fff!important;box-shadow:0 4px 12px rgba(143,10,87,.16)}
-      #nav .nav-group-buttons button::before{display:block;font-size:20px;line-height:1;font-weight:800;color:#8f0a57}
-      #nav .nav-group-buttons button.active::before{color:#fff}
-      #nav button[data-page="dashboard"]::before{content:'▦'}
-      #nav button[data-page="clientes"]::before{content:'👥'}
-      #nav button[data-page="cadastroCliente"]::before{content:'＋'}
-      #nav button[data-page="planos"]::before{content:'⌁'}
-      #nav button[data-page="cobrancas"]::before{content:'▤'}
-      #nav button[data-page="recebimentos"]::before{content:'$'}
-      #nav button[data-page="ordens"]::before{content:'☑'}
-      #nav button[data-page="contratos"]::before{content:'▧'}
-      #nav button[data-page="cliente"]::before{content:'◎'}
-      #nav button[data-page="pontos"]::before{content:'⌘'}
-      #nav button[data-page="equipamentos"]::before{content:'▣'}
-      #nav button[data-page="tecnicos"]::before{content:'⚒'}
-      #nav button[data-page="despesas"]::before{content:'◫'}
-      #nav button[data-page="perfisPermissoes"]::before{content:'◈'}
-      #nav button[data-page="usuarios"]::before{content:'●'}
-      #nav button[data-page="acessosPonto"]::before{content:'◷'}
-      #nav button[data-page="registros"]::before{content:'☷'}
-      #nav button[data-page="configObrigatorios"]::before{content:'✓'}
-      @media(max-width:1050px){#nav .nav-group-buttons{grid-template-columns:repeat(4,minmax(0,1fr))}}
-      @media(max-width:700px){#nav.nav-groups{padding:10px!important;gap:10px!important}#nav .nav-group{padding:10px;border-radius:12px}#nav .nav-group-title{font-size:12px;margin-bottom:8px}#nav .nav-group-buttons{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}#nav .nav-group-buttons button{min-height:68px;padding:7px 5px!important;font-size:11px!important}#nav .nav-group-buttons button::before{font-size:18px}}
-      @media(max-width:430px){#nav .nav-group-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}#nav .nav-group-buttons button{min-height:62px}}
-      `;
-      d.head.appendChild(style);
-    }catch(e){console.error('Falha ao organizar menu',e)}
+      organizarMenu(d);
+      instalarDataNascimentoFacil(d);
+    }catch(e){console.error('Falha ao preparar interface',e)}
   });
 })();
 </script>
