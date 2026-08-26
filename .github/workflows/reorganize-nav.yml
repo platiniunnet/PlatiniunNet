@@ -1,0 +1,42 @@
+name: Organizar navegacao PlatiniunNet
+
+on:
+  push:
+    paths:
+      - '.github/workflows/reorganize-nav.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Aplicar novo layout de navegacao
+        run: python patch_nav.py
+      - name: Validar arquivo
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          t = Path('index.html').read_text(encoding='utf-8')
+          assert 'Gestão Principal' in t
+          assert 'Atendimentos e Contratos' in t
+          assert 'Rede e Equipamentos' in t
+          assert 'Configurações e Controle' in t
+          assert '<section id="dashboard"' in t
+          assert '<section id="clientes"' in t
+          print('Validação OK')
+          PY
+      - name: Publicar alteracao
+        run: |
+          git config user.name 'platiniunnet-bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Organiza botoes do menu em grupos' || exit 0
+          git push origin main
