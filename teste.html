@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PlatiniunNet — Teste</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f5f6f8}
+#appframe{display:block;width:100%;height:100%;border:0;background:#fff}
+</style>
+</head>
+<body>
+<iframe id="appframe" src="app.html?v=1170" title="PlatiniunNet teste"></iframe>
+<script>
+(function(){
+  const frame=document.getElementById('appframe');
+  frame.addEventListener('load',()=>{
+    try{
+      const d=frame.contentDocument;
+      const nav=d.getElementById('nav');
+      const main=d.querySelector('main');
+      const header=d.querySelector('header');
+      if(!nav||!main||!header)return;
+
+      if(!nav.dataset.organized){
+        nav.dataset.organized='1';
+        nav.classList.add('nav-groups');
+        const groups=[
+          ['Gestão Principal',['dashboard','clientes','cadastroCliente','planos','cobrancas','recebimentos']],
+          ['Atendimentos e Contratos',['ordens','contratos','cliente']],
+          ['Rede e Equipamentos',['pontos','equipamentos','tecnicos','despesas']],
+          ['Configurações e Controle',['perfisPermissoes','usuarios','acessosPonto','registros','configObrigatorios']]
+        ];
+        const byPage={};
+        nav.querySelectorAll('button[data-page]').forEach(b=>byPage[b.dataset.page]=b);
+        nav.innerHTML='';
+        groups.forEach(([title,pages])=>{
+          const g=d.createElement('div'); g.className='nav-group';
+          const t=d.createElement('div'); t.className='nav-group-title'; t.textContent=title;
+          const bs=d.createElement('div'); bs.className='nav-group-buttons';
+          pages.forEach(p=>{if(byPage[p])bs.appendChild(byPage[p]);});
+          g.append(t,bs); nav.appendChild(g);
+        });
+      }
+
+      let top=d.getElementById('moduleTopbar');
+      if(!top){
+        top=d.createElement('div');
+        top.id='moduleTopbar';
+        top.innerHTML='<button type="button" id="moduleBack">← Voltar</button><strong id="moduleTitle"></strong>';
+        main.parentNode.insertBefore(top,main);
+      }
+
+      const style=d.createElement('style');
+      style.textContent=`
+        #nav.nav-groups{display:grid!important;grid-template-columns:1fr!important;gap:12px!important;position:static!important;padding:14px 16px!important;background:#f5f6f8!important;border-bottom:1px solid #ececf0!important}
+        #nav .nav-group{background:#fff;border:1px solid #e6e6eb;border-radius:14px;padding:12px;box-shadow:0 2px 8px rgba(0,0,0,.035)}
+        #nav .nav-group-title{margin:0 0 10px 2px;color:#8f0a57;font-size:13px;font-weight:800}
+        #nav .nav-group-buttons{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
+        #nav .nav-group-buttons button{min-height:72px;padding:9px 7px!important;border:1px solid #e2e2e7!important;border-radius:10px!important;background:#fff!important;color:#333!important;font-size:12px!important;font-weight:700;text-align:center}
+        #nav .nav-group-buttons button.active{background:#8f0a57!important;border-color:#8f0a57!important;color:#fff!important}
+        #moduleTopbar{display:none;position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #e7e7ec;padding:10px 14px;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+        #moduleTopbar button{min-height:38px;padding:7px 12px;border:1px solid #d9d9df;border-radius:9px;background:#fff;font-weight:700}
+        #moduleTopbar strong{font-size:16px;color:#8f0a57}
+        body.module-mode header,body.module-mode #nav{display:none!important}
+        body.module-mode #moduleTopbar{display:flex!important}
+        body.module-mode main{padding-top:14px!important}
+        body.module-mode .page.active{animation:pnFade .12s ease}
+        @keyframes pnFade{from{opacity:.5;transform:translateY(3px)}to{opacity:1;transform:none}}
+        @media(max-width:1050px){#nav .nav-group-buttons{grid-template-columns:repeat(4,minmax(0,1fr))}}
+        @media(max-width:700px){#nav .nav-group-buttons{grid-template-columns:repeat(3,minmax(0,1fr))}}
+        @media(max-width:430px){#nav .nav-group-buttons{grid-template-columns:repeat(2,minmax(0,1fr))}}
+      `;
+      d.head.appendChild(style);
+
+      const pageTitle=(id)=>({dashboard:'Dashboard',clientes:'Clientes',cadastroCliente:'Cadastrar cliente',planos:'Planos',cobrancas:'Cobranças',recebimentos:'Recebimentos',ordens:'Ordens de Serviço',contratos:'Contratos',cliente:'Área do Cliente',pontos:'Pontos de Distribuição',equipamentos:'Equipamentos',tecnicos:'Técnicos',despesas:'Despesas',perfisPermissoes:'Perfis e Permissões',usuarios:'Usuários',acessosPonto:'Acessos / Ponto',registros:'Registros',configObrigatorios:'Config. Obrigatórios'})[id]||'PlatiniunNet';
+
+      function enterModule(page){
+        if(page==='dashboard')return;
+        d.body.classList.add('module-mode');
+        d.getElementById('moduleTitle').textContent=pageTitle(page);
+        setTimeout(()=>d.defaultView.scrollTo(0,0),0);
+      }
+      nav.querySelectorAll('button[data-page]').forEach(b=>{
+        b.addEventListener('click',()=>setTimeout(()=>enterModule(b.dataset.page),0));
+      });
+      d.getElementById('moduleBack').onclick=()=>{
+        d.body.classList.remove('module-mode');
+        const dash=nav.querySelector('button[data-page="dashboard"]');
+        if(dash)dash.click();
+        d.defaultView.scrollTo(0,0);
+      };
+    }catch(e){console.error(e)}
+  });
+})();
+</script>
+</body>
+</html>
